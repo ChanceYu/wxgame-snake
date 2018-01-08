@@ -8,11 +8,14 @@ let context   = canvas.getContext('2d');
  */
 export default class Main {
   constructor() {
+    this.init();
+
     let snake = new Snake();
 
-    snake.draw();
-
-    this.init();
+    // test
+    snake.add();
+    snake.add();
+    snake.add();
   }
 
   init() {

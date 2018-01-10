@@ -1,5 +1,3 @@
-import Rect from './rect';
-
 let context = canvas.getContext('2d');
 
 const CVS_WIDTH = canvas.width;
@@ -26,6 +24,7 @@ export default class Snake {
 
     this.bodies = [];
 
+    // 蛇头信息
     this.bodies.push({
       x: START_X,
       y: START_Y,
@@ -39,36 +38,44 @@ export default class Snake {
     this.draw();
   }
 
+  /**
+   * 开始绘制
+   */
   draw() {
-    this.canvas.getContext('2d').clearRect(0, 0, CVS_WIDTH, CVS_HEIGHT);
-    context.clearRect(0, 0, CVS_WIDTH, CVS_HEIGHT);
+    this.onBeforeDraw && this.onBeforeDraw();
+    this.context.clearRect(0, 0, CVS_WIDTH, CVS_HEIGHT);
+
     this.drawBodies();
     this.drawEyes();
 
-    this.onBeforeDraw && this.onBeforeDraw();
     context.drawImage(this.canvas, 0, 0);
   }
 
+  /**
+   * 画身体
+   */
   drawBodies() {
     let bodies = this.bodies;
     let len = bodies.length;
     let i = len - 1;
+    let draw = (body) => {
+      let { x, y, color, dir } = body;
+
+      this.context.fillStyle = color;
+      this.context.beginPath();
+      this.context.arc(x, y, UNIT, 0, 2 * Math.PI, true);
+      this.context.closePath();
+      this.context.fill();
+    };
 
     for(; i >= 0; i--){
-      this.drawBody(bodies[i]);
+      draw(bodies[i]);
     }
   }
 
-  drawBody(body) {
-    let { x, y, color, dir } = body;
-
-    this.context.fillStyle = color;
-    this.context.beginPath();
-    this.context.arc(x, y, UNIT, 0, 2 * Math.PI, true);
-    this.context.closePath();
-    this.context.fill();
-  }
-
+  /**
+   * 画眼睛
+   */
   drawEyes() {
     let { x, y, color } = this.bodies[0];
 
@@ -87,6 +94,9 @@ export default class Snake {
     this.context.stroke();
   }
 
+  /**
+   * 增加长度
+   */
   add(){
     this.colorIndex++;
 
@@ -126,6 +136,9 @@ export default class Snake {
     this.draw();
   }
 
+  /**
+   * 移动，改变位移
+   */
   move() {
     let bodies = this.bodies;
     let len = bodies.length;
@@ -156,6 +169,9 @@ export default class Snake {
     this.bodies = bodies;
   }
 
+  /**
+   * 开始游戏
+   */
   start(){
     if(this.collisionCheck()){
       return;
@@ -168,13 +184,19 @@ export default class Snake {
     }, this.speed);
   }
 
+  /**
+   * 碰撞检测
+   */
   collisionCheck(){
     let isMeet = false;
     let bodies = this.bodies;
-    let first = bodies[0];
+    let head = bodies[0];
     let len = bodies.length;
 
-    if (first.x > CVS_WIDTH - UNIT - UNIT_HALF){
+    let dis = UNIT + UNIT_HALF;
+
+    // 是否碰到画布边缘
+    if (head.x > CVS_WIDTH - dis || head.x < 0 || head.y < 0 || head.y > CVS_HEIGHT - dis){
       isMeet = true;
     }
 

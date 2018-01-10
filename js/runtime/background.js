@@ -9,7 +9,7 @@ const BACKGROUND_COLOR = '#EAEDF4';
 const LINE_COLOR = '#e0e3ea';
 
 export default {
-  render(){
+  draw(){
     this.fillBackground();
     this.drawLine();
   },

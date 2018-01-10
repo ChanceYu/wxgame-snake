@@ -1,7 +1,14 @@
 import Snake from './npc/snake';
+import Control from './npc/control';
 import Background from './runtime/background';
 
-let context   = canvas.getContext('2d');
+const context = canvas.getContext('2d');
+
+const CVS_WIDTH = canvas.width;
+const CVS_HEIGHT = canvas.height;
+
+const snake = new Snake();
+const control = new Control();
 
 /**
  * 游戏主函数
@@ -9,20 +16,21 @@ let context   = canvas.getContext('2d');
 export default class Main {
   constructor() {
     this.init();
-
-    context.globalCompositeOperation = 'source-over';
   }
 
   init() {
-    Background.render();
+    Background.draw();
+
     this.initSnake();
+    this.initControl();
   }
 
   initSnake() {
-    let snake = new Snake();
-
     snake.onBeforeDraw = () => {
-      Background.render();
+      context.clearRect(0, 0, CVS_WIDTH, CVS_HEIGHT);
+
+      Background.draw();
+      control.draw();
     };
 
     snake.start();
@@ -31,5 +39,9 @@ export default class Main {
     snake.add();
     snake.add();
     snake.add();
+  }
+
+  initControl(){
+    control.draw();
   }
 }

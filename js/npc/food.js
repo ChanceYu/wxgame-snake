@@ -1,6 +1,6 @@
 let context = canvas.getContext('2d');
 
-export default class Rect {
+export default class Food {
   constructor() {
   }
 

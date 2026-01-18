@@ -2,120 +2,201 @@ import MathTool from '../base/math-tool';
 
 const context = canvas.getContext('2d');
 
-const CVS_WIDTH = canvas.width;
-const CVS_HEIGHT = canvas.height;
+// 使用实际屏幕尺寸
+const CVS_WIDTH = window.CVS_WIDTH || canvas.width;
+const CVS_HEIGHT = window.CVS_HEIGHT || canvas.height;
 
-const CIRCLE_RADIUS = 40;
-const POINT_RADIUS = 10;
-const POINT_X = 50;
-const POINT_Y = CVS_HEIGHT - 50;
+// 控制器位置和大小
+const CONTROL_RADIUS = 50;
+const CONTROL_CENTER_RADIUS = 15;
+const CONTROL_X = CVS_WIDTH - 80;
+const CONTROL_Y = CVS_HEIGHT - 80;
 
-const DIS = 2;
+// 方向扇区定义
 const SECTORS = {
-  top: {
-    start: -135 + DIS,
-    end: -45 - DIS
+  up: {
+    start: -135,
+    end: -45
   },
   right: {
-    start: -45 + DIS,
-    end: 45 - DIS
+    start: -45,
+    end: 45
   },
-  bottom: {
-    start: 45 + DIS,
-    end: 135 - DIS
+  down: {
+    start: 45,
+    end: 135
   },
   left: {
-    start: 135 + DIS,
-    end: -135 - DIS
+    start: 135,
+    end: 225
   }
 };
 
 export default class Control {
   constructor() {
-    this.canvas = document.createElement('canvas');
-    this.context = this.canvas.getContext('2d');
-
-    this.context.globalCompositeOperation = 'source-over';
-
+    this.activeDirection = null;
     this.initEvents();
   }
 
   /**
-   * 开始绘制
+   * 绘制控制器
    */
   draw() {
-    this.context.clearRect(0, 0, CVS_WIDTH, CVS_HEIGHT);
-    this.drawCircle();
-
-    if(this.activeDir){
-      // this.drawSector(this.activeDir);
+    // 外圈
+    context.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    context.beginPath();
+    context.arc(CONTROL_X, CONTROL_Y, CONTROL_RADIUS, 0, 2 * Math.PI);
+    context.closePath();
+    context.fill();
+    
+    // 方向指示（像素风格箭头）
+    this.drawArrows();
+    
+    // 中心圆
+    context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    context.beginPath();
+    context.arc(CONTROL_X, CONTROL_Y, CONTROL_CENTER_RADIUS, 0, 2 * Math.PI);
+    context.closePath();
+    context.fill();
+    
+    // 如果有激活的方向，高亮显示
+    if (this.activeDirection) {
+      this.drawActiveDirection(this.activeDirection);
     }
-
-    context.drawImage(this.canvas, 0, 0);
   }
 
   /**
-   * 画控制区域圆形
+   * 绘制箭头（像素风格）
    */
-  drawCircle() {
-    // dot
-    this.context.fillStyle = 'rgba(0,0,0,0.6)';
-    this.context.beginPath();
-    this.context.arc(POINT_X, POINT_Y, POINT_RADIUS, 0, 2 * Math.PI, true);
-    this.context.closePath();
-    this.context.fill();
-
-    // area
-    this.context.fillStyle = 'rgba(0,0,0,0.4)';
-    this.context.beginPath();
-    this.context.arc(POINT_X, POINT_Y, CIRCLE_RADIUS, 0, 2 * Math.PI, true);
-    this.context.closePath();
-    this.context.fill();
+  drawArrows() {
+    const arrowSize = 8;
+    const arrowDistance = 30;
+    
+    context.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    
+    // 上箭头
+    context.beginPath();
+    context.moveTo(CONTROL_X, CONTROL_Y - arrowDistance);
+    context.lineTo(CONTROL_X - arrowSize, CONTROL_Y - arrowDistance + arrowSize);
+    context.lineTo(CONTROL_X + arrowSize, CONTROL_Y - arrowDistance + arrowSize);
+    context.closePath();
+    context.fill();
+    
+    // 右箭头
+    context.beginPath();
+    context.moveTo(CONTROL_X + arrowDistance, CONTROL_Y);
+    context.lineTo(CONTROL_X + arrowDistance - arrowSize, CONTROL_Y - arrowSize);
+    context.lineTo(CONTROL_X + arrowDistance - arrowSize, CONTROL_Y + arrowSize);
+    context.closePath();
+    context.fill();
+    
+    // 下箭头
+    context.beginPath();
+    context.moveTo(CONTROL_X, CONTROL_Y + arrowDistance);
+    context.lineTo(CONTROL_X - arrowSize, CONTROL_Y + arrowDistance - arrowSize);
+    context.lineTo(CONTROL_X + arrowSize, CONTROL_Y + arrowDistance - arrowSize);
+    context.closePath();
+    context.fill();
+    
+    // 左箭头
+    context.beginPath();
+    context.moveTo(CONTROL_X - arrowDistance, CONTROL_Y);
+    context.lineTo(CONTROL_X - arrowDistance + arrowSize, CONTROL_Y - arrowSize);
+    context.lineTo(CONTROL_X - arrowDistance + arrowSize, CONTROL_Y + arrowSize);
+    context.closePath();
+    context.fill();
   }
 
   /**
-   * 画控制扇形
+   * 绘制激活的方向
    */
-  drawSector(dir){
-    let grd = this.context.createRadialGradient(POINT_X, POINT_Y, POINT_RADIUS, POINT_X, POINT_Y, CIRCLE_RADIUS);
-    grd.addColorStop(0, 'rgba(105,105,105,0.1)');
-    grd.addColorStop(1, 'rgba(105,105,105,0.9)');
-
-    this.context.lineWidth = 30;
-    this.context.strokeStyle = grd || 'rgba(255,255,255,0.2)';
-    this.context.beginPath();
-    this.context.arc(POINT_X, POINT_Y, POINT_RADIUS + 14, MathTool.getRadian(SECTORS[dir].start), MathTool.getRadian(SECTORS[dir].end));
-    this.context.stroke();
+  drawActiveDirection(direction) {
+    context.fillStyle = 'rgba(74, 144, 226, 0.5)';
+    
+    const innerRadius = CONTROL_CENTER_RADIUS;
+    const outerRadius = CONTROL_RADIUS;
+    const sector = SECTORS[direction];
+    
+    context.beginPath();
+    context.moveTo(CONTROL_X, CONTROL_Y);
+    context.arc(
+      CONTROL_X,
+      CONTROL_Y,
+      outerRadius,
+      MathTool.getRadian(sector.start),
+      MathTool.getRadian(sector.end)
+    );
+    context.lineTo(CONTROL_X, CONTROL_Y);
+    context.closePath();
+    context.fill();
   }
 
-  initEvents(){
+  /**
+   * 初始化触摸事件
+   */
+  initEvents() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let isTouching = false;
+    
     wx.onTouchStart((e) => {
-      let { pageX, pageY } = e.touches[0];
-      let dis = MathTool.getDistanceBetweenTwoPoints(POINT_X, -POINT_Y, pageX, -pageY);
-
-      let rad = MathTool.getAngleFromCircle(
-        { x: POINT_X, y: -POINT_Y },
-        { x: pageX, y: -pageY },
-        CIRCLE_RADIUS);
-
-      let deg = MathTool.getDegrees(rad);
-
-      // console.log(rad);
-      // console.log(deg);
-
-      if (dis > CIRCLE_RADIUS || dis < POINT_RADIUS) return;
+      const { pageX, pageY } = e.touches[0];
       
-      let dir;
-
-      for(dir in SECTORS){
-        let dirAngle = SECTORS[dir];
-        
-        if (dirAngle.start < deg && dirAngle.end > deg ){
-          this.activeDir = dir;
-          return;
-        }
+      // 检查是否点击在控制区域
+      const distance = MathTool.getDistanceBetweenTwoPoints(
+        CONTROL_X,
+        CONTROL_Y,
+        pageX,
+        pageY
+      );
+      
+      if (distance <= CONTROL_RADIUS) {
+        isTouching = true;
+        touchStartX = pageX;
+        touchStartY = pageY;
+        this.handleDirectionChange(pageX, pageY);
       }
-      
     });
+    
+    wx.onTouchMove((e) => {
+      if (!isTouching) return;
+      
+      const { pageX, pageY } = e.touches[0];
+      this.handleDirectionChange(pageX, pageY);
+    });
+    
+    wx.onTouchEnd(() => {
+      isTouching = false;
+      this.activeDirection = null;
+    });
+  }
+
+  /**
+   * 处理方向改变
+   */
+  handleDirectionChange(touchX, touchY) {
+    const dx = touchX - CONTROL_X;
+    const dy = touchY - CONTROL_Y;
+    
+    // 计算角度
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    
+    let direction = null;
+    
+    // 判断方向
+    if (angle >= -45 && angle < 45) {
+      direction = 'right';
+    } else if (angle >= 45 && angle < 135) {
+      direction = 'down';
+    } else if (angle >= -135 && angle < -45) {
+      direction = 'up';
+    } else {
+      direction = 'left';
+    }
+    
+    if (direction && direction !== this.activeDirection) {
+      this.activeDirection = direction;
+      this.onDirectionChange && this.onDirectionChange(direction);
+    }
   }
 }

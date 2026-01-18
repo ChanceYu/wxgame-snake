@@ -25,5 +25,6 @@ dist
 build
 
 project.config.json
+project.private.config.json
 
 .psd

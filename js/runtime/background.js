@@ -1,41 +1,45 @@
-let context = canvas.getContext('2d');
+const context = canvas.getContext('2d');
 
-const CVS_WIDTH = canvas.width;
-const CVS_HEIGHT = canvas.height;
-const RECT_SIZE = 15;
-const RECT_UNIT = CVS_WIDTH / RECT_SIZE;
+// 使用实际屏幕尺寸
+const CVS_WIDTH = window.CVS_WIDTH || canvas.width;
+const CVS_HEIGHT = window.CVS_HEIGHT || canvas.height;
 
-const BACKGROUND_COLOR = '#EAEDF4';
-const LINE_COLOR = '#e0e3ea';
+// 格子大小
+const GRID_SIZE = 20;
+
+// 背景颜色（像素风格）
+const BACKGROUND_COLOR = '#2C3E50';
+const GRID_LINE_COLOR = '#34495E';
 
 export default {
-  draw(){
+  draw() {
     this.fillBackground();
-    this.drawLine();
+    this.drawGrid();
   },
+  
   fillBackground() {
     context.fillStyle = BACKGROUND_COLOR;
     context.fillRect(0, 0, CVS_WIDTH, CVS_HEIGHT);
   },
-  drawLine(){
-    let top = RECT_UNIT;
-    let left = RECT_UNIT;
-
-    for (; top < CVS_HEIGHT; top += RECT_UNIT) {
-      context.lineWidth = 1;
-      context.strokeStyle = LINE_COLOR;
-      context.moveTo(0, top);
-      context.lineTo(CVS_WIDTH, top);
+  
+  drawGrid() {
+    context.strokeStyle = GRID_LINE_COLOR;
+    context.lineWidth = 1;
+    
+    // 绘制垂直线
+    for (let x = 0; x <= CVS_WIDTH; x += GRID_SIZE) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, CVS_HEIGHT);
       context.stroke();
     }
-
-    for (; left < CVS_WIDTH; left += RECT_UNIT) {
-      context.lineWidth = 1;
-      context.strokeStyle = LINE_COLOR;
-      context.moveTo(left, 0);
-      context.lineTo(left, CVS_HEIGHT);
+    
+    // 绘制水平线
+    for (let y = 0; y <= CVS_HEIGHT; y += GRID_SIZE) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(CVS_WIDTH, y);
       context.stroke();
     }
-
   }
 }
